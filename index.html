@@ -299,7 +299,18 @@ function todayText(){let d=new Date();return d.toLocaleDateString(undefined,{yea
 function openDecimalPracticeMenu(){updateStudentNames();updateDecimalPracticeRows();showSlide('decimalPracticeMenu')}
 function canOpenDecimalTest(n){if(!getStudentKey())return false;if(n===1)return true;let st=getDecimalStatus();return !!st[n-1]}
 function updateDecimalPracticeRows(){let st=getDecimalStatus(), body=document.getElementById('decimalPracticeRows');if(!body)return;let hasStudent=!!getStudentKey();body.innerHTML='';for(let i=1;i<=5;i++){let done=!!st[i];let unlocked=hasStudent&&canOpenDecimalTest(i);let date=!hasStudent?'—':(done?st[i].date:(unlocked?'Not opened':'Locked'));let status=!hasStudent?'Select class and name':(done?'Completed':(unlocked?'Not Completed':'Locked'));let btnClass=done?'completed':'';let disabled=(done||!unlocked)?'disabled':'';let statusClass=done?'status-complete':'status-incomplete';let tr=document.createElement('tr');tr.innerHTML='<td><button class="decimal-open-btn '+btnClass+'" '+disabled+' onclick="startDecimalTest('+i+')">Practice Test '+i+'</button></td><td>'+date+'</td><td class="'+statusClass+'">'+status+'</td>';body.appendChild(tr)}}
-function coordChoices(correct, wrongs){let arr=[String(correct)].concat(wrongs.map(String));let out=[];arr.forEach(x=>{if(!out.includes(x))out.push(x)});while(out.length<4)out.push(pair(uniquePoint([])));return shuffle(out).slice(0,4)}
+function coordChoices(correct, wrongs){
+  correct=String(correct);
+  let wrongOnly=[];
+  wrongs.map(String).forEach(x=>{
+    if(x!==correct && !wrongOnly.includes(x)) wrongOnly.push(x);
+  });
+  while(wrongOnly.length<3){
+    let extra=pair(uniquePoint([]));
+    if(extra!==correct && !wrongOnly.includes(extra)) wrongOnly.push(extra);
+  }
+  return shuffle([correct].concat(shuffle(wrongOnly).slice(0,3)));
+}
 function addTestPlottingInstruction(arr){let p=uniquePoint([]);let ans='Move '+p[0]+' units right and '+p[1]+' units up.';let wrongs=['Move '+p[1]+' units right and '+p[0]+' units up.','Move '+p[0]+' units up and '+p[1]+' units right.','Move '+Math.max(1,p[0]-1)+' units right and '+p[1]+' units up.'];arr.push({kind:'text',q:'To plot the point <span class="math-choice">'+pair(p)+'</span> in the first quadrant, which instruction is correct?',extra:'',answer:ans,choices:shuffle([ans].concat(wrongs))})}
 function addTestPlotPoint(arr){let p=uniquePoint([]);arr.push({kind:'plot',p:p,q:'Plot the point <span class="math-choice">'+pair(p)+'</span> on the coordinate plane.',answer:pair(p),choices:[]})}
 function addTestIdentify(arr){let p=uniquePoint([]);let wrongs=[[p[1],p[0]],[Math.max(1,p[0]-1),p[1]],[p[0],Math.max(1,p[1]-1)],[Math.min(9,p[0]+1),Math.min(9,p[1]+1)]].map(pair);arr.push({kind:'identify',p:p,q:'Point <span class="math-choice">P</span> is shown on the coordinate plane. What is the ordered pair of point <span class="math-choice">P</span>?',answer:pair(p),choices:coordChoices(pair(p),wrongs)})}
